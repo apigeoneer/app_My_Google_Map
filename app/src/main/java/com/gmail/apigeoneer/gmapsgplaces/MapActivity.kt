@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -33,42 +34,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         getLocationPermission()
     }
 
-//    METHOD - 1
-//    private fun initMap() {
-//        Log.d(TAG, "::: initMap: initializing map :::")
-//        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-//        mapFragment.getMapAsync(this)
-//    }
-//
-//    override fun onMapReady(googleMap: GoogleMap?) {
-//        mMap = googleMap!!
-//    }
-
-//  METHOD - 2
-    override fun onMapReady(googleMap: GoogleMap?) {
-        mMap = googleMap!!
+    private fun initMap() {
+        Log.d(TAG, "::: initMap: initializing map :::")
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
     }
 
-    /**
-     * Check for both our permissions, and request a permission from the user when necessary
-     * After Marshmallow you need to as explicitly for some permissions at run-time
-     */
-    fun getLocationPermission(): Unit {
-        Log.d(TAG, "getLocationPermission: getting location permissions")
-        // Making an array of all the req.d permissions
-        val permissions = arrayOf(FINE_LOCATION, COARSE_LOCATION)
-
-        if (ContextCompat.checkSelfPermission(this, FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            if (ContextCompat.checkSelfPermission(this, COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mLocationPermissionsGranted = true
-            } else {
-                // Permission hasn't been granted, so request it
-                ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
-            }
-        } else {
-            // Permission hasn't been granted, so request it
-            ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
-        }
+    override fun onMapReady(googleMap: GoogleMap?) {
+        Toast.makeText(this, "Map is ready!!!", Toast.LENGTH_SHORT).show()
+        mMap = googleMap!!
     }
 
     /**
@@ -95,9 +69,31 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                     Log.d(TAG, "onRequestPermissionsResult: permission granted")
                     mLocationPermissionsGranted = true
                     // initialize our map
-                    //initMap()
+                    initMap()
                 }
             }
+        }
+    }
+
+    /**
+     * Check for both our permissions, and request a permission from the user when necessary
+     * After Marshmallow you need to as explicitly for some permissions at run-time
+     */
+    private fun getLocationPermission(): Unit {
+        Log.d(TAG, "getLocationPermission: getting location permissions")
+        // Making an array of all the req.d permissions
+        val permissions = arrayOf(FINE_LOCATION, COARSE_LOCATION)
+
+        if (ContextCompat.checkSelfPermission(this, FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                mLocationPermissionsGranted = true
+            } else {
+                // Permission hasn't been granted, so request it
+                ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
+            }
+        } else {
+            // Permission hasn't been granted, so request it
+            ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
         }
     }
 }
