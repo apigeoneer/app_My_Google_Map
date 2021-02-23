@@ -8,10 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 
 
-class MapActivity : AppCompatActivity() {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    private lateinit var mMap: GoogleMap
     private var mLocationPermissionsGranted = false
 
     companion object {
@@ -25,6 +29,24 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState, persistentState)
         setContentView(R.layout.activity_map)
+
+        getLocationPermission()
+    }
+
+//    METHOD - 1
+//    private fun initMap() {
+//        Log.d(TAG, "::: initMap: initializing map :::")
+//        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+//        mapFragment.getMapAsync(this)
+//    }
+//
+//    override fun onMapReady(googleMap: GoogleMap?) {
+//        mMap = googleMap!!
+//    }
+
+//  METHOD - 2
+    override fun onMapReady(googleMap: GoogleMap?) {
+        mMap = googleMap!!
     }
 
     /**
@@ -73,6 +95,7 @@ class MapActivity : AppCompatActivity() {
                     Log.d(TAG, "onRequestPermissionsResult: permission granted")
                     mLocationPermissionsGranted = true
                     // initialize our map
+                    //initMap()
                 }
             }
         }
