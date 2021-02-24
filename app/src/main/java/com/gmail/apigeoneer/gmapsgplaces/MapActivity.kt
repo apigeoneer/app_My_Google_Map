@@ -1,5 +1,6 @@
 package com.gmail.apigeoneer.gmapsgplaces
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -8,7 +9,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -20,15 +20,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var mLocationPermissionsGranted = false
 
     companion object {
-
         private const val TAG = "MapActivity"
         private const val FINE_LOCATION = android.Manifest.permission.ACCESS_FINE_LOCATION
         private const val COARSE_LOCATION = android.Manifest.permission.ACCESS_COARSE_LOCATION
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1234
     }
 
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
+//  override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?)       // Activity doesn't load
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
         getLocationPermission()
@@ -41,38 +41,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
+        Log.d(TAG, "::: Map is ready!!! :::")
         Toast.makeText(this, "Map is ready!!!", Toast.LENGTH_SHORT).show()
         mMap = googleMap!!
-    }
-
-    /**
-     * After the user responds to the system permissions dialog, the system then invokes your app's implementation of onRequestPermissionsResult()
-     * by passing in the user response to the permission dialog, as well as the request code that you defined
-     */
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        Log.d(TAG, "::: onRequestPermissionsResult: called. :::")
-        mLocationPermissionsGranted = false
-
-        when (requestCode) {
-            LOCATION_PERMISSION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty()) {
-                    var i = 0
-                    while (i < grantResults.size) {
-                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                            mLocationPermissionsGranted = false
-                            // initialize the map
-                            Log.d(TAG, "onRequestPermissionsResult: permission denied")
-                            return
-                        }
-                        i++
-                    }
-                    Log.d(TAG, "onRequestPermissionsResult: permission granted")
-                    mLocationPermissionsGranted = true
-                    // initialize our map
-                    initMap()
-                }
-            }
-        }
     }
 
     /**
@@ -94,6 +65,34 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             // Permission hasn't been granted, so request it
             ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
+        }
+    }
+
+    /**
+     * After the user responds to the system permissions dialog, the system then invokes your app's implementation of onRequestPermissionsResult()
+     * by passing in the user response to the permission dialog, as well as the request code that you defined
+     */
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        Log.d(TAG, "::: onRequestPermissionsResult: called. :::")
+        mLocationPermissionsGranted = false
+
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty()) {
+                    for (i in grantResults.indices) {
+                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                            mLocationPermissionsGranted = false
+                            // initialize the map
+                            Log.d(TAG, "onRequestPermissionsResult: permission denied")
+                            return
+                        }
+                    }
+                    Log.d(TAG, "onRequestPermissionsResult: permission granted")
+                    mLocationPermissionsGranted = true
+                    // initialize our map
+                    initMap()
+                }
+            }
         }
     }
 }

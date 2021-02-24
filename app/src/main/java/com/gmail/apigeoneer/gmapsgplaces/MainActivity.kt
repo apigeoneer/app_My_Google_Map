@@ -11,7 +11,6 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 
 
-
 class MainActivity : AppCompatActivity() {
 
     companion object {
@@ -43,7 +42,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * Check if the user has the apt version of Google Play Services installed
      */
-    fun isServicesOK() : Boolean {
+    private fun isServicesOK() : Boolean {
         Log.d(TAG,"::: isServicesOK() : Checking Google Play Services version... :::")
 
         // Storing the state of user's Google Play Services to decide further action based on that
