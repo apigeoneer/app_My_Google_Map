@@ -9,21 +9,29 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
 
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private lateinit var mMap: GoogleMap
-    private var mLocationPermissionsGranted = false
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var map: GoogleMap
+    private var locationPermissionsGranted = false
 
     companion object {
         private const val TAG = "MapActivity"
         private const val FINE_LOCATION = android.Manifest.permission.ACCESS_FINE_LOCATION
         private const val COARSE_LOCATION = android.Manifest.permission.ACCESS_COARSE_LOCATION
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1234
+        private const val DEFAULT_ZOOM = 15f
     }
 
 //  override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?)       // Activity doesn't load
@@ -34,16 +42,52 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         getLocationPermission()
     }
 
+    fun getDeviceLocation() {
+        Log.d(TAG, "getDeviceLocation(): getting the device's current location")
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
+        try {
+            if (locationPermissionsGranted) {
+                val location = fusedLocationProviderClient.lastLocation
+
+                location.addOnCompleteListener(
+                        OnCompleteListener { task ->
+                            when {
+                                task.isSuccessful -> {
+                                    Log.d(TAG, "onComplete: found location!")
+                                    val currentLocation = task.result
+
+                                    moveCamera(LatLng(currentLocation.latitude, currentLocation.longitude), DEFAULT_ZOOM)
+                                } else -> {
+                                    Log.d(TAG, "onComplete: current location is null")
+                                    Toast.makeText(this, "unable to get the current location", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        })
+            }
+        } catch (e : SecurityException) {
+            Log.e(TAG, "getDeviceLocation: SecurityException: " + e.message)
+        }
+    }
+
+    private fun moveCamera(latLng: LatLng, zoom: Float) {
+        Log.d(TAG, "moveCamera: moving the camera to: lat: ${latLng.latitude}, lng: ${latLng.longitude}")
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
+    }
+
+    // Initializing map
     private fun initMap() {
         Log.d(TAG, "::: initMap: initializing map :::")
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
+    // onMapReady Callback
     override fun onMapReady(googleMap: GoogleMap?) {
         Log.d(TAG, "::: Map is ready!!! :::")
         Toast.makeText(this, "Map is ready!!!", Toast.LENGTH_SHORT).show()
-        mMap = googleMap!!
+        map = googleMap!!
     }
 
     /**
@@ -57,7 +101,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (ContextCompat.checkSelfPermission(this, FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             if (ContextCompat.checkSelfPermission(this, COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mLocationPermissionsGranted = true
+                locationPermissionsGranted = true
                 initMap()
             } else {
                 // Permission hasn't been granted, so request it
@@ -75,21 +119,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         Log.d(TAG, "::: onRequestPermissionsResult: called. :::")
-        mLocationPermissionsGranted = false
+        locationPermissionsGranted = false
 
         when (requestCode) {
             LOCATION_PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty()) {
                     for (i in grantResults.indices) {
                         if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                            mLocationPermissionsGranted = false
+                            locationPermissionsGranted = false
                             // initialize the map
                             Log.d(TAG, "onRequestPermissionsResult: permission denied")
                             return
                         }
                     }
                     Log.d(TAG, "onRequestPermissionsResult: permission granted")
-                    mLocationPermissionsGranted = true
+                    locationPermissionsGranted = true
                     // initialize our map
                     initMap()
                 }
