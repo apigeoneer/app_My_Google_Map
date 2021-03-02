@@ -42,40 +42,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         getLocationPermission()
     }
 
-    fun getDeviceLocation() {
-        Log.d(TAG, "getDeviceLocation(): getting the device's current location")
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-
-        try {
-            if (locationPermissionsGranted) {
-                val location = fusedLocationProviderClient.lastLocation
-
-                location.addOnCompleteListener(
-                        OnCompleteListener { task ->
-                            when {
-                                task.isSuccessful -> {
-                                    Log.d(TAG, "onComplete: found location!")
-                                    val currentLocation = task.result
-
-                                    moveCamera(LatLng(currentLocation.latitude, currentLocation.longitude), DEFAULT_ZOOM)
-                                } else -> {
-                                    Log.d(TAG, "onComplete: current location is null")
-                                    Toast.makeText(this, "unable to get the current location", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        })
-            }
-        } catch (e : SecurityException) {
-            Log.e(TAG, "getDeviceLocation: SecurityException: " + e.message)
-        }
-    }
-
-    private fun moveCamera(latLng: LatLng, zoom: Float) {
-        Log.d(TAG, "moveCamera: moving the camera to: lat: ${latLng.latitude}, lng: ${latLng.longitude}")
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
-    }
-
     // Initializing map
     private fun initMap() {
         Log.d(TAG, "::: initMap: initializing map :::")
@@ -88,6 +54,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         Log.d(TAG, "::: Map is ready!!! :::")
         Toast.makeText(this, "Map is ready!!!", Toast.LENGTH_SHORT).show()
         map = googleMap!!
+
+        if (locationPermissionsGranted) {
+            getDeviceLocation()
+        }
     }
 
     /**
@@ -139,5 +109,39 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+    }
+
+    fun getDeviceLocation() {
+        Log.d(TAG, "getDeviceLocation(): getting the device's current location")
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
+        try {
+            if (locationPermissionsGranted) {
+                val location = fusedLocationProviderClient.lastLocation
+
+                location.addOnCompleteListener(
+                        OnCompleteListener { task ->
+                            when {
+                                task.isSuccessful -> {
+                                    Log.d(TAG, "onComplete: found location!")
+                                    val currentLocation = task.result
+
+                                    moveCamera(LatLng(currentLocation.latitude, currentLocation.longitude), DEFAULT_ZOOM)
+                                } else -> {
+                                Log.d(TAG, "onComplete: current location is null")
+                                Toast.makeText(this, "unable to get the current location", Toast.LENGTH_SHORT).show()
+                            }
+                            }
+                        })
+            }
+        } catch (e : SecurityException) {
+            Log.e(TAG, "getDeviceLocation: SecurityException: " + e.message)
+        }
+    }
+
+    private fun moveCamera(latLng: LatLng, zoom: Float) {
+        Log.d(TAG, "moveCamera: moving the camera to: lat: ${latLng.latitude}, lng: ${latLng.longitude}")
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
     }
 }
