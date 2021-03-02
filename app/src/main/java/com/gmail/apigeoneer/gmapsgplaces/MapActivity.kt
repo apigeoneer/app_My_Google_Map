@@ -57,6 +57,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (locationPermissionsGranted) {
             getDeviceLocation()
+
+            // mark a little blue dot on the map
+            if (ActivityCompat.checkSelfPermission(
+                        this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(
+                        this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return
+            }
+            map.isMyLocationEnabled = true
         }
     }
 
@@ -111,7 +120,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    fun getDeviceLocation() {
+    private fun getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation(): getting the device's current location")
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
